@@ -1197,4 +1197,46 @@ export class SceneManager {
       }))
     };
   }
+
+  addVehicle(vehicle: Vehicle): void {
+    this.vehicles.set(vehicle.id, vehicle);
+    this.gameObjects.set(vehicle.id, vehicle);
+    
+    // Add to spatial index
+    const position = vehicle.getPosition();
+    this.spatialIndex.insert(vehicle.id, position.x, position.y, position.z);
+    
+    // Add to physics world
+    if (this.physicsEngine) {
+      this.physicsEngine.addVehicle(vehicle);
+    }
+    
+    // Add to audio system
+    if (this.audioEngine) {
+      this.audioEngine.addVehicle(vehicle);
+    }
+    
+    console.log(`Vehicle ${vehicle.id} added to scene`);
+  }
+
+  updateVehicles(deltaTime: number): void {
+    for (const vehicle of this.vehicles.values()) {
+      // Update vehicle physics
+      vehicle.update(deltaTime);
+      
+      // Update spatial index
+      const position = vehicle.getPosition();
+      this.spatialIndex.update(vehicle.id, position.x, position.y, position.z);
+      
+      // Update physics
+      if (this.physicsEngine) {
+        this.physicsEngine.updateVehicle(vehicle, deltaTime);
+      }
+      
+      // Update audio
+      if (this.audioEngine) {
+        this.audioEngine.updateVehicle(vehicle, deltaTime);
+      }
+    }
+  }
 } 

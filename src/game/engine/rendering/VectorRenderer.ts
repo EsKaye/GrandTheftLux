@@ -102,15 +102,15 @@ export class VectorCamera {
     const newUp = direction.cross(right).normalize();
 
     const rotationMatrix = new Matrix4x4();
-    rotationMatrix.data[0] = right.x;
-    rotationMatrix.data[1] = right.y;
-    rotationMatrix.data[2] = right.z;
-    rotationMatrix.data[4] = newUp.x;
-    rotationMatrix.data[5] = newUp.y;
-    rotationMatrix.data[6] = newUp.z;
-    rotationMatrix.data[8] = direction.x;
-    rotationMatrix.data[9] = direction.y;
-    rotationMatrix.data[10] = direction.z;
+    rotationMatrix.set(0, 0, right.x);
+    rotationMatrix.set(0, 1, right.y);
+    rotationMatrix.set(0, 2, right.z);
+    rotationMatrix.set(1, 0, newUp.x);
+    rotationMatrix.set(1, 1, newUp.y);
+    rotationMatrix.set(1, 2, newUp.z);
+    rotationMatrix.set(2, 0, direction.x);
+    rotationMatrix.set(2, 1, direction.y);
+    rotationMatrix.set(2, 2, direction.z);
 
     this.rotation = Quaternion.identity(); // Placeholder - implement matrix to quaternion conversion
     this.updateViewMatrix();
@@ -771,24 +771,24 @@ export class VectorRenderer {
     }
   }
 
-  private createRotationMatrix(direction: Vector3D, up: Vector3D): Matrix4x4 {
-    const rotationMatrix = new Matrix4x4();
-    const data = rotationMatrix.getData();
-    
+  private createLookAtMatrix(eye: Vector3D, target: Vector3D, up: Vector3D): Matrix4x4 {
+    const direction = Vector3D.subtract(target, eye).normalize();
     const right = Vector3D.cross(direction, up).normalize();
-    const newUp = Vector3D.cross(right, direction).normalize();
+    const newUp = Vector3D.cross(right, direction);
     
-    data[0] = right.x;
-    data[1] = right.y;
-    data[2] = right.z;
-    data[4] = newUp.x;
-    data[5] = newUp.y;
-    data[6] = newUp.z;
-    data[8] = direction.x;
-    data[9] = direction.y;
-    data[10] = direction.z;
+    const rotationMatrix = new Matrix4x4();
+    rotationMatrix.set(0, 0, right.x);
+    rotationMatrix.set(0, 1, right.y);
+    rotationMatrix.set(0, 2, right.z);
+    rotationMatrix.set(1, 0, newUp.x);
+    rotationMatrix.set(1, 1, newUp.y);
+    rotationMatrix.set(1, 2, newUp.z);
+    rotationMatrix.set(2, 0, -direction.x);
+    rotationMatrix.set(2, 1, -direction.y);
+    rotationMatrix.set(2, 2, -direction.z);
     
-    return rotationMatrix;
+    const translationMatrix = Matrix4x4.translation(-eye.x, -eye.y, -eye.z);
+    return Matrix4x4.multiply(rotationMatrix, translationMatrix);
   }
 
   private updateCameraMatrices(): void {

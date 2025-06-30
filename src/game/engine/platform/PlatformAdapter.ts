@@ -24,26 +24,47 @@ export interface PlatformInfo {
 }
 
 export interface PlatformCapabilities {
-  touch: boolean;
-  gamepad: boolean;
-  vr: boolean;
-  ar: boolean;
+  // Graphics capabilities
   webgl: boolean;
   webgl2: boolean;
-  webAudio: boolean;
-  serviceWorker: boolean;
-  indexedDB: boolean;
+  canvas2d: boolean;
+  svg: boolean;
+  css3d: boolean;
+  webxr: boolean;
+  webvr: boolean;
+  ar: boolean;
+  // Input capabilities
+  keyboard: boolean;
+  mouse: boolean;
+  touch: boolean;
+  gamepad: boolean;
+  // Audio capabilities
+  audio: boolean;
+  // Storage capabilities
   localStorage: boolean;
-  fileSystem: boolean;
-  network: boolean;
-  bluetooth: boolean;
-  nfc: boolean;
+  sessionStorage: boolean;
+  indexedDB: boolean;
+  // Network capabilities
+  websocket: boolean;
+  webrtc: boolean;
+  // Device capabilities
+  battery: boolean;
+  vibration: boolean;
+  geolocation: boolean;
+  // Media capabilities
   camera: boolean;
   microphone: boolean;
-  accelerometer: boolean;
-  gyroscope: boolean;
-  magnetometer: boolean;
-  gps: boolean;
+  // File capabilities
+  fileReader: boolean;
+  fileSystem: boolean;
+  // Performance capabilities
+  performance: boolean;
+  requestAnimationFrame: boolean;
+  // Other capabilities
+  webWorker: boolean;
+  sharedWorker: boolean;
+  serviceWorker: boolean;
+  pushManager: boolean;
 }
 
 export interface PerformanceMetrics {
@@ -81,7 +102,6 @@ export interface InputCapabilities {
 export interface GraphicsCapabilities {
   webgl: boolean;
   webgl2: boolean;
-  webgpu: boolean;
   canvas2d: boolean;
   svg: boolean;
   css3d: boolean;
@@ -105,6 +125,11 @@ export interface GraphicsCapabilities {
   premultipliedAlpha: boolean;
   preserveDrawingBuffer: boolean;
   powerPreference: 'default' | 'low-power' | 'high-performance';
+  gpuMemoryMB: number;
+  audio: boolean;
+  maxChannels: number;
+  sampleRate: number;
+  latency: number;
 }
 
 export interface AudioCapabilities {
@@ -121,14 +146,16 @@ export interface AudioCapabilities {
   latency: number;
 }
 
+export interface BatteryInfo {
+  level: number;
+  charging: boolean;
+  chargingTime: number;
+  dischargingTime: number;
+}
+
 export class PlatformAdapter {
   private config: EngineConfig;
   private platformInfo: PlatformInfo;
-  private inputManager: any;
-  private graphicsManager: any;
-  private audioManager: any;
-  private networkManager: any;
-  private storageManager: any;
 
   constructor(config: EngineConfig) {
     this.config = config;
@@ -155,7 +182,7 @@ export class PlatformAdapter {
   private detectPlatform(): PlatformInfo {
     const userAgent = navigator.userAgent;
     const platform = this.detectPlatformType(userAgent);
-    const capabilities = this.detectCapabilities();
+    const capabilities = this.detectPlatformCapabilities();
     const performance = this.detectPerformanceMetrics();
     const input = this.detectInputCapabilities();
     const graphics = this.detectGraphicsCapabilities();
@@ -204,28 +231,49 @@ export class PlatformAdapter {
     return versionMatch ? versionMatch[1] : 'Unknown';
   }
 
-  private detectCapabilities(): PlatformCapabilities {
+  private detectPlatformCapabilities(): PlatformCapabilities {
     return {
-      touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+      // Graphics capabilities
+      webgl: 'getContext' in document.createElement('canvas'),
+      webgl2: !!document.createElement('canvas').getContext('webgl2'),
+      canvas2d: !!document.createElement('canvas').getContext('2d'),
+      svg: 'createElementNS' in document,
+      css3d: 'transform' in document.body.style,
+      webxr: 'xr' in navigator && 'isSessionSupported' in (navigator as any).xr,
+      webvr: 'getVRDisplays' in navigator,
+      ar: 'xr' in navigator && 'isSessionSupported' in (navigator as any).xr,
+      // Input capabilities
+      keyboard: 'keyboard' in window,
+      mouse: 'onmousedown' in window,
+      touch: 'ontouchstart' in window,
       gamepad: 'getGamepads' in navigator,
-      vr: 'getVRDisplays' in navigator || 'xr' in navigator,
-      ar: 'xr' in navigator && 'isSessionSupported' in navigator.xr,
-      webgl: !!this.getWebGLContext(),
-      webgl2: !!this.getWebGL2Context(),
-      webAudio: 'AudioContext' in window || 'webkitAudioContext' in window,
-      serviceWorker: 'serviceWorker' in navigator,
-      indexedDB: 'indexedDB' in window,
+      // Audio capabilities
+      audio: 'AudioContext' in window || 'webkitAudioContext' in window,
+      // Storage capabilities
       localStorage: 'localStorage' in window,
-      fileSystem: 'showOpenFilePicker' in window,
-      network: 'navigator' in window,
-      bluetooth: 'bluetooth' in navigator,
-      nfc: 'NDEFReader' in window,
-      camera: 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices,
-      microphone: 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices,
-      accelerometer: 'Accelerometer' in window,
-      gyroscope: 'Gyroscope' in window,
-      magnetometer: 'Magnetometer' in window,
-      gps: 'geolocation' in navigator
+      sessionStorage: 'sessionStorage' in window,
+      indexedDB: 'indexedDB' in window,
+      // Network capabilities
+      websocket: 'WebSocket' in window,
+      webrtc: 'RTCPeerConnection' in window,
+      // Device capabilities
+      battery: 'getBattery' in navigator,
+      vibration: 'vibrate' in navigator,
+      geolocation: 'geolocation' in navigator,
+      // Media capabilities
+      camera: 'getUserMedia' in navigator.mediaDevices,
+      microphone: 'getUserMedia' in navigator.mediaDevices,
+      // File capabilities
+      fileReader: 'FileReader' in window,
+      fileSystem: 'requestFileSystem' in window,
+      // Performance capabilities
+      performance: 'performance' in window,
+      requestAnimationFrame: 'requestAnimationFrame' in window,
+      // Other capabilities
+      webWorker: 'Worker' in window,
+      sharedWorker: 'SharedWorker' in window,
+      serviceWorker: 'serviceWorker' in navigator,
+      pushManager: 'PushManager' in window
     };
   }
 
@@ -270,21 +318,16 @@ export class PlatformAdapter {
 
   private detectGraphicsCapabilities(): GraphicsCapabilities {
     const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    const gl2 = canvas.getContext('webgl2');
-    
+    const gl = this.getWebGLContext(canvas);
+    const audioContext = window.AudioContext || (window as any).webkitAudioContext;
+
     return {
+      // WebGL capabilities
       webgl: !!gl,
-      webgl2: !!gl2,
-      webgpu: 'gpu' in navigator,
-      canvas2d: !!canvas.getContext('2d'),
-      svg: 'createElementNS' in document,
-      css3d: 'transform' in document.body.style,
-      webxr: 'xr' in navigator,
-      webvr: 'getVRDisplays' in navigator,
+      webgl2: !!canvas.getContext('webgl2'),
       maxTextureSize: gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) : 2048,
       maxAnisotropy: gl ? this.getMaxAnisotropy(gl) : 1,
-      maxDrawBuffers: gl ? gl.getParameter(gl.MAX_DRAW_BUFFERS) : 1,
+      maxDrawBuffers: gl ? (gl as any).getParameter((gl as any).MAX_DRAW_BUFFERS) || 1 : 1,
       maxVertexUniformVectors: gl ? gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS) : 128,
       maxFragmentUniformVectors: gl ? gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS) : 16,
       maxVaryingVectors: gl ? gl.getParameter(gl.MAX_VARYING_VECTORS) : 8,
@@ -299,7 +342,12 @@ export class PlatformAdapter {
       alphaChannel: gl ? gl.getContextAttributes()?.alpha || false : false,
       premultipliedAlpha: gl ? gl.getContextAttributes()?.premultipliedAlpha || false : false,
       preserveDrawingBuffer: gl ? gl.getContextAttributes()?.preserveDrawingBuffer || false : false,
-      powerPreference: 'default'
+      gpuMemoryMB: gl ? this.getGPUMemoryInfo(gl) : 512,
+      // Audio capabilities
+      audio: !!audioContext,
+      maxChannels: audioContext ? (audioContext as any).destination?.maxChannelCount || 2 : 2,
+      sampleRate: audioContext ? (audioContext as any).sampleRate || 44100 : 44100,
+      latency: audioContext ? (audioContext as any).baseLatency || 0.005 : 0.005
     };
   }
 
@@ -321,9 +369,9 @@ export class PlatformAdapter {
     };
   }
 
-  private getWebGLContext(): WebGLRenderingContext | null {
-    const canvas = document.createElement('canvas');
-    return canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  private getWebGLContext(canvas: HTMLCanvasElement): WebGLRenderingContext | null {
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    return gl as WebGLRenderingContext | null;
   }
 
   private getWebGL2Context(): WebGL2RenderingContext | null {
@@ -606,14 +654,27 @@ export class PlatformAdapter {
     return { used: 0, total: 0, limit: 0 };
   }
 
-  getBatteryInfo(): Promise<{ level: number; charging: boolean }> {
+  private async getBatteryInfo(): Promise<BatteryInfo> {
     if ('getBattery' in navigator) {
-      return navigator.getBattery().then(battery => ({
-        level: battery.level,
-        charging: battery.charging
-      }));
+      try {
+        const battery = await (navigator as any).getBattery();
+        return {
+          level: battery.level,
+          charging: battery.charging,
+          chargingTime: battery.chargingTime,
+          dischargingTime: battery.dischargingTime
+        };
+      } catch (error) {
+        console.warn('Failed to get battery info:', error);
+      }
     }
-    return Promise.resolve({ level: 1, charging: true });
+    
+    return {
+      level: 1.0,
+      charging: true,
+      chargingTime: 0,
+      dischargingTime: Infinity
+    };
   }
 
   // Network utilities

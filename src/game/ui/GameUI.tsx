@@ -248,6 +248,27 @@ export const GameUI: React.FC<GameUIProps> = ({
     return '#ff0000';
   };
   
+  const renderVehicleInfo = () => {
+    if (!playerVehicle) return null;
+    
+    const position = playerVehicle.getPosition();
+    const velocity = playerVehicle.getVelocity();
+    const rotation = playerVehicle.getRotation();
+    
+    return (
+      <div className="vehicle-info">
+        <h3>Vehicle: {playerVehicle.id}</h3>
+        <div className="vehicle-stats">
+          <div>Position: ({position.x.toFixed(2)}, {position.y.toFixed(2)}, {position.z.toFixed(2)})</div>
+          <div>Velocity: ({velocity.x.toFixed(2)}, {velocity.y.toFixed(2)}, {velocity.z.toFixed(2)})</div>
+          <div>Rotation: ({rotation.x.toFixed(2)}, {rotation.y.toFixed(2)}, {rotation.z.toFixed(2)})</div>
+          <div>Speed: {Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z).toFixed(2)} m/s</div>
+          <div>Type: {playerVehicle.type}</div>
+        </div>
+      </div>
+    );
+  };
+  
   return (
     <div className="game-ui">
       {/* HUD */}
@@ -591,6 +612,8 @@ export const GameUI: React.FC<GameUIProps> = ({
           <span className="help-action">Performance</span>
         </div>
       </div>
+      
+      {renderVehicleInfo()}
     </div>
   );
 }; 

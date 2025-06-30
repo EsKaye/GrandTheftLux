@@ -298,6 +298,18 @@ export class Vector3D {
   toQuaternion(): Quaternion {
     return Quaternion.fromEuler(this.x, this.y, this.z);
   }
+
+  static add(a: Vector3D, b: Vector3D): Vector3D {
+    return new Vector3D(a.x + b.x, a.y + b.y, a.z + b.z);
+  }
+
+  static subtract(a: Vector3D, b: Vector3D): Vector3D {
+    return new Vector3D(a.x - b.x, a.y - b.y, a.z - b.z);
+  }
+
+  static multiply(a: Vector3D, b: Vector3D): Vector3D {
+    return new Vector3D(a.x * b.x, a.y * b.y, a.z * b.z);
+  }
 }
 
 export class Matrix4x4 {
@@ -490,16 +502,37 @@ export class Matrix4x4 {
   }
 
   determinant(): number {
-    // Simplified 4x4 determinant calculation
-    // This is a basic implementation - for production use, consider using optimized libraries
-    return this.data[0] * this.data[5] * this.data[10] * this.data[15] +
-           this.data[1] * this.data[6] * this.data[11] * this.data[12] +
-           this.data[2] * this.data[7] * this.data[8] * this.data[13] +
-           this.data[3] * this.data[4] * this.data[9] * this.data[14] -
-           this.data[3] * this.data[6] * this.data[9] * this.data[12] -
-           this.data[2] * this.data[5] * this.data[8] * this.data[15] -
-           this.data[1] * this.data[4] * this.data[11] * this.data[14] -
-           this.data[0] * this.data[7] * this.data[10] * this.data[13];
+    const m11 = this.data[0];
+    const m12 = this.data[1];
+    const m13 = this.data[2];
+    const m14 = this.data[3];
+    const m21 = this.data[4];
+    const m22 = this.data[5];
+    const m23 = this.data[6];
+    const m24 = this.data[7];
+    const m31 = this.data[8];
+    const m32 = this.data[9];
+    const m33 = this.data[10];
+    const m34 = this.data[11];
+    const m41 = this.data[12];
+    const m42 = this.data[13];
+    const m43 = this.data[14];
+    const m44 = this.data[15];
+
+    return (
+      m11 * m22 * m33 * m44 - m11 * m22 * m34 * m43 +
+      m11 * m23 * m34 * m42 - m11 * m23 * m32 * m44 +
+      m11 * m24 * m32 * m43 - m11 * m24 * m33 * m42 -
+      m12 * m21 * m33 * m44 + m12 * m21 * m34 * m43 -
+      m12 * m23 * m34 * m41 + m12 * m23 * m31 * m44 -
+      m12 * m24 * m31 * m43 + m12 * m24 * m33 * m41 -
+      m13 * m21 * m34 * m42 + m13 * m21 * m32 * m44 -
+      m13 * m22 * m34 * m41 + m13 * m22 * m31 * m44 -
+      m13 * m24 * m31 * m42 + m13 * m24 * m32 * m41 -
+      m14 * m21 * m32 * m43 + m14 * m21 * m33 * m42 -
+      m14 * m22 * m33 * m41 + m14 * m22 * m31 * m43 -
+      m14 * m23 * m31 * m42 + m14 * m23 * m32 * m41
+    );
   }
 
   inverse(): Matrix4x4 {
@@ -560,6 +593,28 @@ export class Matrix4x4 {
       ${this.data.slice(8, 12).join(', ')},
       ${this.data.slice(12, 16).join(', ')}
     ])`;
+  }
+
+  set(row: number, col: number, value: number): void {
+    this.data[row * 4 + col] = value;
+  }
+
+  get(row: number, col: number): number {
+    return this.data[row * 4 + col];
+  }
+
+  static multiply(a: Matrix4x4, b: Matrix4x4): Matrix4x4 {
+    const result = new Matrix4x4();
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        let sum = 0;
+        for (let k = 0; k < 4; k++) {
+          sum += a.get(i, k) * b.get(k, j);
+        }
+        result.set(i, j, sum);
+      }
+    }
+    return result;
   }
 }
 

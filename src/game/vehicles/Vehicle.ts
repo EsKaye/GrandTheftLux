@@ -243,4 +243,46 @@ export class Vehicle extends GameObject {
     this.state.fuel += amount;
     this.state.fuel = Math.min(100, this.state.fuel);
   }
+
+  getPosition(): Vector3D {
+    return this.state.position;
+  }
+
+  getVelocity(): Vector3D {
+    return this.state.velocity;
+  }
+
+  getRotation(): Vector3D {
+    return this.state.rotation;
+  }
+
+  getControls(): VehicleControls {
+    return this.state.controls;
+  }
+
+  getData(): VehicleState {
+    return this.state;
+  }
+
+  getId(): string {
+    return this.id;
+  }
+
+  setPosition(position: Vector3D): void {
+    this.state.position = position;
+  }
+
+  setRotation(rotation: Vector3D): void {
+    this.state.rotation = rotation;
+  }
+
+  setVelocity(velocity: Vector3D): void {
+    this.state.velocity = velocity;
+  }
+
+  update(deltaTime: number): void {
+    // Update vehicle physics and state
+    this.physics.update(this, deltaTime);
+    this.controller.update(deltaTime);
+  }
 } 
