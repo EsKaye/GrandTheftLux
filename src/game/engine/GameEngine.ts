@@ -17,6 +17,13 @@ import { SceneManager } from './SceneManager';
 import { AssetManager } from './AssetManager';
 import { GameState } from '../types/GameState';
 import { GameConfig } from '../types/GameConfig';
+import { PerformanceMonitor } from './PerformanceMonitor';
+import { PlatformAdapter } from './PlatformAdapter';
+import { CrossPlatformEngine } from './CrossPlatformEngine';
+import { MapDataManager } from './MapDataManager';
+import { VehicleSystem } from './VehicleSystem';
+import { NetworkManager } from './NetworkManager';
+import { VectorRenderer } from './VectorRenderer';
 
 export class GameEngine {
   private renderer: THREE.WebGLRenderer;
@@ -36,21 +43,49 @@ export class GameEngine {
   private config: GameConfig;
   private isRunning: boolean = false;
   private lastFrameTime: number = 0;
-  
-  // Performance tracking
-  private fpsCounter: number = 0;
-  private fpsTimer: number = 0;
-  private currentFPS: number = 0;
+  private deltaTime: number = 0;
+  private elapsedTime: number = 0;
+  private frameCount: number = 0;
+  private fps: number = 0;
+  private fpsUpdateInterval: number = 0;
+  private lastFpsUpdate: number = 0;
+  private frameTimes: Array<number> = new Array(60).fill(0);
+  private frameTimeIndex: number = 0;
+  private performanceMonitor: PerformanceMonitor;
+  private platformAdapter: PlatformAdapter;
+  private crossPlatformEngine: CrossPlatformEngine;
+  private mapDataManager: MapDataManager;
+  private vehicleSystem: VehicleSystem;
+  private networkManager: NetworkManager;
+  private vectorRenderer: VectorRenderer;
   
   constructor(config: GameConfig) {
     this.config = config;
     this.gameState = new GameState();
     this.clock = new THREE.Clock();
-    
-    // Initialize core systems
-    this.initializeRenderer();
-    this.initializeScene();
-    this.initializeSystems();
+    this.isRunning = false;
+    this.lastFrameTime = 0;
+    this.deltaTime = 0;
+    this.elapsedTime = 0;
+    this.frameCount = 0;
+    this.fps = 0;
+    this.fpsUpdateInterval = 0;
+    this.lastFpsUpdate = 0;
+    this.frameTimes = new Array(60).fill(0);
+    this.frameTimeIndex = 0;
+    this.performanceMonitor = new PerformanceMonitor();
+    this.platformAdapter = new PlatformAdapter();
+    this.crossPlatformEngine = new CrossPlatformEngine();
+    this.mapDataManager = new MapDataManager();
+    this.vehicleSystem = new VehicleSystem();
+    this.assetManager = new AssetManager();
+    this.audioEngine = new AudioEngine({ volume: 1.0, masterVolume: 1.0 });
+    this.inputManager = new InputManager({ enableKeyboard: true, enableMouse: true, enableGamepad: true });
+    this.sceneManager = new SceneManager(this.scene, this.camera, { enableShadows: true, enableFog: false });
+    this.physicsEngine = new PhysicsEngine();
+    this.networkManager = new NetworkManager();
+    this.vectorRenderer = new VectorRenderer();
+    this.initializeEngine();
     
     // Set up event listeners
     this.setupEventListeners();
@@ -214,17 +249,20 @@ export class GameEngine {
    * Update FPS counter
    */
   private updateFPS(deltaTime: number): void {
-    this.fpsCounter++;
-    this.fpsTimer += deltaTime;
+    this.frameCount++;
+    this.frameTimes[this.frameTimeIndex] = deltaTime;
+    this.frameTimeIndex = (this.frameTimeIndex + 1) % this.frameTimes.length;
     
-    if (this.fpsTimer >= 1.0) {
-      this.currentFPS = this.fpsCounter;
-      this.fpsCounter = 0;
-      this.fpsTimer = 0;
+    this.fpsUpdateInterval += deltaTime;
+    
+    if (this.fpsUpdateInterval >= 1.0) {
+      this.fps = this.frameCount / this.fpsUpdateInterval;
+      this.frameCount = 0;
+      this.fpsUpdateInterval = 0;
       
       // Log FPS in development
-      if (__DEV__) {
-        console.log(`🎮 FPS: ${this.currentFPS}`);
+      if (this.config.debug) {
+        console.log(`🎮 FPS: ${this.fps}`);
       }
     }
   }
@@ -259,7 +297,7 @@ export class GameEngine {
    * Get current FPS
    */
   public getFPS(): number {
-    return this.currentFPS;
+    return this.fps;
   }
   
   /**
@@ -288,5 +326,11 @@ export class GameEngine {
    */
   public getAssetManager(): AssetManager {
     return this.assetManager;
+  }
+  
+  private log(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
+    if (this.config.debug) {
+      console[level](`[GTL IV Engine] ${message}`);
+    }
   }
 } 

@@ -170,6 +170,14 @@ export class Vector3D {
     return new Vector3D(0, 0, -1);
   }
 
+  static cross(a: Vector3D, b: Vector3D): Vector3D {
+    return new Vector3D(
+      a.y * b.z - a.z * b.y,
+      a.z * b.x - a.x * b.z,
+      a.x * b.y - a.y * b.x
+    );
+  }
+
   // Basic operations
   add(other: Vector3D): Vector3D {
     return new Vector3D(this.x + other.x, this.y + other.y, this.z + other.z);
@@ -293,10 +301,10 @@ export class Vector3D {
 }
 
 export class Matrix4x4 {
-  private data: number[];
+  private data: Float32Array;
 
   constructor() {
-    this.data = new Array(16).fill(0);
+    this.data = new Float32Array(16);
     this.identity();
   }
 
@@ -350,13 +358,28 @@ export class Matrix4x4 {
   }
 
   // Basic operations
-  identity(): void {
-    this.data = [
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
-    ];
+  public identity(): Matrix4x4 {
+    this.data[0] = 1; this.data[1] = 0; this.data[2] = 0; this.data[3] = 0;
+    this.data[4] = 0; this.data[5] = 1; this.data[6] = 0; this.data[7] = 0;
+    this.data[8] = 0; this.data[9] = 0; this.data[10] = 1; this.data[11] = 0;
+    this.data[12] = 0; this.data[13] = 0; this.data[14] = 0; this.data[15] = 1;
+    return this;
+  }
+
+  public getData(): Float32Array {
+    return this.data;
+  }
+
+  public setData(data: Float32Array): void {
+    this.data.set(data);
+  }
+
+  public getElement(row: number, col: number): number {
+    return this.data[row * 4 + col];
+  }
+
+  public setElement(row: number, col: number, value: number): void {
+    this.data[row * 4 + col] = value;
   }
 
   multiply(other: Matrix4x4): Matrix4x4 {
@@ -484,26 +507,50 @@ export class Matrix4x4 {
     if (Math.abs(det) < 1e-10) {
       throw new Error('Matrix is not invertible');
     }
-    
-    // Simplified inverse calculation
-    // For production use, consider using optimized libraries like gl-matrix
-    const result = new Matrix4x4();
-    // ... inverse calculation implementation
-    return result;
+
+    const inv = new Matrix4x4();
+    const invDet = 1.0 / det;
+
+    // Calculate inverse using cofactor method
+    inv.data[0] = (this.data[5] * this.data[10] * this.data[15] - this.data[5] * this.data[11] * this.data[14] - this.data[9] * this.data[6] * this.data[15] + this.data[9] * this.data[7] * this.data[14] + this.data[13] * this.data[6] * this.data[11] - this.data[13] * this.data[7] * this.data[10]) * invDet;
+    inv.data[1] = (-this.data[1] * this.data[10] * this.data[15] + this.data[1] * this.data[11] * this.data[14] + this.data[9] * this.data[2] * this.data[15] - this.data[9] * this.data[3] * this.data[14] - this.data[13] * this.data[2] * this.data[11] + this.data[13] * this.data[3] * this.data[10]) * invDet;
+    inv.data[2] = (this.data[1] * this.data[6] * this.data[15] - this.data[1] * this.data[7] * this.data[14] - this.data[5] * this.data[2] * this.data[15] + this.data[5] * this.data[3] * this.data[14] + this.data[13] * this.data[2] * this.data[7] - this.data[13] * this.data[3] * this.data[6]) * invDet;
+    inv.data[3] = (-this.data[1] * this.data[6] * this.data[11] + this.data[1] * this.data[7] * this.data[10] + this.data[5] * this.data[2] * this.data[11] - this.data[5] * this.data[3] * this.data[10] - this.data[9] * this.data[2] * this.data[7] + this.data[9] * this.data[3] * this.data[6]) * invDet;
+
+    inv.data[4] = (-this.data[4] * this.data[10] * this.data[15] + this.data[4] * this.data[11] * this.data[14] + this.data[8] * this.data[6] * this.data[15] - this.data[8] * this.data[7] * this.data[14] - this.data[12] * this.data[6] * this.data[11] + this.data[12] * this.data[7] * this.data[10]) * invDet;
+    inv.data[5] = (this.data[0] * this.data[10] * this.data[15] - this.data[0] * this.data[11] * this.data[14] - this.data[8] * this.data[2] * this.data[15] + this.data[8] * this.data[3] * this.data[14] + this.data[12] * this.data[2] * this.data[11] - this.data[12] * this.data[3] * this.data[10]) * invDet;
+    inv.data[6] = (-this.data[0] * this.data[6] * this.data[15] + this.data[0] * this.data[7] * this.data[14] + this.data[4] * this.data[2] * this.data[15] - this.data[4] * this.data[3] * this.data[14] - this.data[12] * this.data[2] * this.data[7] + this.data[12] * this.data[3] * this.data[6]) * invDet;
+    inv.data[7] = (this.data[0] * this.data[6] * this.data[11] - this.data[0] * this.data[7] * this.data[10] - this.data[4] * this.data[2] * this.data[11] + this.data[4] * this.data[3] * this.data[10] + this.data[8] * this.data[2] * this.data[7] - this.data[8] * this.data[3] * this.data[6]) * invDet;
+
+    inv.data[8] = (this.data[4] * this.data[9] * this.data[15] - this.data[4] * this.data[11] * this.data[13] - this.data[8] * this.data[5] * this.data[15] + this.data[8] * this.data[7] * this.data[13] + this.data[12] * this.data[5] * this.data[11] - this.data[12] * this.data[7] * this.data[9]) * invDet;
+    inv.data[9] = (-this.data[0] * this.data[9] * this.data[15] + this.data[0] * this.data[11] * this.data[13] + this.data[8] * this.data[1] * this.data[15] - this.data[8] * this.data[3] * this.data[13] - this.data[12] * this.data[1] * this.data[11] + this.data[12] * this.data[3] * this.data[9]) * invDet;
+    inv.data[10] = (this.data[0] * this.data[5] * this.data[15] - this.data[0] * this.data[7] * this.data[13] - this.data[4] * this.data[1] * this.data[15] + this.data[4] * this.data[3] * this.data[13] + this.data[12] * this.data[1] * this.data[7] - this.data[12] * this.data[3] * this.data[5]) * invDet;
+    inv.data[11] = (-this.data[0] * this.data[5] * this.data[11] + this.data[0] * this.data[7] * this.data[9] + this.data[4] * this.data[1] * this.data[11] - this.data[4] * this.data[3] * this.data[9] - this.data[8] * this.data[1] * this.data[7] + this.data[8] * this.data[3] * this.data[5]) * invDet;
+
+    inv.data[12] = (-this.data[4] * this.data[9] * this.data[14] + this.data[4] * this.data[10] * this.data[13] + this.data[8] * this.data[5] * this.data[14] - this.data[8] * this.data[6] * this.data[13] - this.data[12] * this.data[5] * this.data[10] + this.data[12] * this.data[6] * this.data[9]) * invDet;
+    inv.data[13] = (this.data[0] * this.data[9] * this.data[14] - this.data[0] * this.data[10] * this.data[13] - this.data[8] * this.data[1] * this.data[14] + this.data[8] * this.data[2] * this.data[13] + this.data[12] * this.data[1] * this.data[10] - this.data[12] * this.data[2] * this.data[9]) * invDet;
+    inv.data[14] = (-this.data[0] * this.data[5] * this.data[14] + this.data[0] * this.data[6] * this.data[13] + this.data[4] * this.data[1] * this.data[14] - this.data[4] * this.data[2] * this.data[13] - this.data[12] * this.data[1] * this.data[6] + this.data[12] * this.data[2] * this.data[5]) * invDet;
+    inv.data[15] = (this.data[0] * this.data[5] * this.data[10] - this.data[0] * this.data[6] * this.data[9] - this.data[4] * this.data[1] * this.data[10] + this.data[4] * this.data[2] * this.data[9] + this.data[8] * this.data[1] * this.data[6] - this.data[8] * this.data[2] * this.data[5]) * invDet;
+
+    return inv;
+  }
+
+  invert(): Matrix4x4 {
+    return this.inverse();
   }
 
   clone(): Matrix4x4 {
     const result = new Matrix4x4();
-    result.data = [...this.data];
+    result.data = new Float32Array(this.data);
     return result;
   }
 
   toArray(): number[] {
-    return [...this.data];
+    return Array.from(this.data);
   }
 
   fromArray(array: number[]): void {
-    this.data = array.slice(0, 16);
+    this.data.set(array.slice(0, 16));
   }
 
   toString(): string {
@@ -634,36 +681,43 @@ export class Quaternion {
   // Conversion methods
   toMatrix(): Matrix4x4 {
     const matrix = new Matrix4x4();
-    const xx = this.x * this.x;
-    const xy = this.x * this.y;
-    const xz = this.x * this.z;
-    const xw = this.x * this.w;
-    const yy = this.y * this.y;
-    const yz = this.y * this.z;
-    const yw = this.y * this.w;
-    const zz = this.z * this.z;
-    const zw = this.z * this.w;
-
-    matrix.data[0] = 1 - 2 * (yy + zz);
-    matrix.data[1] = 2 * (xy - zw);
-    matrix.data[2] = 2 * (xz + yw);
-    matrix.data[3] = 0;
-
-    matrix.data[4] = 2 * (xy + zw);
-    matrix.data[5] = 1 - 2 * (xx + zz);
-    matrix.data[6] = 2 * (yz - xw);
-    matrix.data[7] = 0;
-
-    matrix.data[8] = 2 * (xz - yw);
-    matrix.data[9] = 2 * (yz + xw);
-    matrix.data[10] = 1 - 2 * (xx + yy);
-    matrix.data[11] = 0;
-
-    matrix.data[12] = 0;
-    matrix.data[13] = 0;
-    matrix.data[14] = 0;
-    matrix.data[15] = 1;
-
+    const data = matrix.getData();
+    
+    const x = this.x;
+    const y = this.y;
+    const z = this.z;
+    const w = this.w;
+    
+    const xx = x * x;
+    const xy = x * y;
+    const xz = x * z;
+    const xw = x * w;
+    const yy = y * y;
+    const yz = y * z;
+    const yw = y * w;
+    const zz = z * z;
+    const zw = z * w;
+    
+    data[0] = 1 - 2 * (yy + zz);
+    data[1] = 2 * (xy - zw);
+    data[2] = 2 * (xz + yw);
+    data[3] = 0;
+    
+    data[4] = 2 * (xy + zw);
+    data[5] = 1 - 2 * (xx + zz);
+    data[6] = 2 * (yz - xw);
+    data[7] = 0;
+    
+    data[8] = 2 * (xz - yw);
+    data[9] = 2 * (yz + xw);
+    data[10] = 1 - 2 * (xx + yy);
+    data[11] = 0;
+    
+    data[12] = 0;
+    data[13] = 0;
+    data[14] = 0;
+    data[15] = 1;
+    
     return matrix;
   }
 
@@ -781,5 +835,97 @@ export class MathUtils {
   static calculateIPD(eyeDistance: number): number {
     // Interpupillary distance calculation for VR
     return eyeDistance * 0.064; // Average IPD is 64mm
+  }
+}
+
+export function quaternionToRotationMatrix(quaternion: Quaternion): Matrix4x4 {
+  const matrix = new Matrix4x4();
+  const data = matrix.getData();
+  
+  const x = quaternion.x;
+  const y = quaternion.y;
+  const z = quaternion.z;
+  const w = quaternion.w;
+  
+  const xx = x * x;
+  const xy = x * y;
+  const xz = x * z;
+  const xw = x * w;
+  const yy = y * y;
+  const yz = y * z;
+  const yw = y * w;
+  const zz = z * z;
+  const zw = z * w;
+  
+  data[0] = 1 - 2 * (yy + zz);
+  data[1] = 2 * (xy - zw);
+  data[2] = 2 * (xz + yw);
+  data[3] = 0;
+  
+  data[4] = 2 * (xy + zw);
+  data[5] = 1 - 2 * (xx + zz);
+  data[6] = 2 * (yz - xw);
+  data[7] = 0;
+  
+  data[8] = 2 * (xz - yw);
+  data[9] = 2 * (yz + xw);
+  data[10] = 1 - 2 * (xx + yy);
+  data[11] = 0;
+  
+  data[12] = 0;
+  data[13] = 0;
+  data[14] = 0;
+  data[15] = 1;
+  
+  return matrix;
+}
+
+export function rotationMatrixToQuaternion(matrix: Matrix4x4): Quaternion {
+  const data = matrix.getData();
+  
+  const m11 = data[0];
+  const m12 = data[1];
+  const m13 = data[2];
+  const m21 = data[4];
+  const m22 = data[5];
+  const m23 = data[6];
+  const m31 = data[8];
+  const m32 = data[9];
+  const m33 = data[10];
+  
+  const trace = m11 + m22 + m33;
+  
+  if (trace > 0) {
+    const s = 0.5 / Math.sqrt(trace + 1.0);
+    return new Quaternion(
+      (m32 - m23) * s,
+      (m13 - m31) * s,
+      (m21 - m12) * s,
+      0.25 / s
+    );
+  } else if (m11 > m22 && m11 > m33) {
+    const s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
+    return new Quaternion(
+      0.25 * s,
+      (m12 + m21) / s,
+      (m13 + m31) / s,
+      (m32 - m23) / s
+    );
+  } else if (m22 > m33) {
+    const s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
+    return new Quaternion(
+      (m12 + m21) / s,
+      0.25 * s,
+      (m23 + m32) / s,
+      (m13 - m31) / s
+    );
+  } else {
+    const s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
+    return new Quaternion(
+      (m13 + m31) / s,
+      (m23 + m32) / s,
+      0.25 * s,
+      (m21 - m12) / s
+    );
   }
 } 

@@ -228,8 +228,9 @@ export class VectorRenderer {
 
     // Try to get WebGL context for 3D rendering
     try {
-      this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
-      if (this.gl) {
+      const gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+      if (gl) {
+        this.gl = gl as WebGLRenderingContext;
         await this.initializeWebGL();
       }
     } catch (error) {
@@ -368,36 +369,20 @@ export class VectorRenderer {
     console.log('🛑 Vector Renderer stopped');
   }
 
-  render(scene: RenderScene): void {
-    if (!this.isInitialized) return;
-
-    this.currentScene = scene;
-    this.frameCount++;
+  public render(deltaTime: number): void {
+    if (!this.gl || !this.shaderProgram) return;
+    
     const currentTime = performance.now();
-    const deltaTime = currentTime - this.lastFrameTime;
+    
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    
+    // Update camera matrices
+    this.updateCameraMatrices();
+    
+    // Render all objects
+    this.renderObjects();
+    
     this.lastFrameTime = currentTime;
-
-    // Clear canvas
-    this.clear();
-
-    // Sort objects by depth for proper rendering order
-    this.sortRenderQueue();
-
-    // Render 3D objects with WebGL if available
-    if (this.gl && this.shaderProgram) {
-      this.render3D();
-    }
-
-    // Render 2D vector graphics
-    this.render2D();
-
-    // Render UI overlays
-    this.renderUI();
-
-    // Apply post-processing effects
-    if (this.config.enablePostProcessing) {
-      this.applyPostProcessing();
-    }
   }
 
   private clear(): void {
@@ -477,39 +462,40 @@ export class VectorRenderer {
   private renderObject3D(object: GameObject): void {
     if (!this.gl || !this.shaderProgram) return;
 
-    // Get object's mesh renderer component
-    const meshRenderer = object.getComponent(MeshRenderer);
+    // Get mesh renderer component
+    const meshRenderer = object.getComponent('MeshRenderer' as any);
     if (!meshRenderer || !meshRenderer.isVisible()) return;
 
-    // Set model-view matrix
-    const modelViewMatrix = this.currentScene!.camera.viewMatrix.multiply(object.transform.worldMatrix);
+    // Set up uniforms
     const modelViewMatrixLocation = this.gl.getUniformLocation(this.shaderProgram, 'uModelViewMatrix');
+    const normalMatrixLocation = this.gl.getUniformLocation(this.shaderProgram, 'uNormalMatrix');
+
     if (modelViewMatrixLocation) {
-      this.gl.uniformMatrix4fv(modelViewMatrixLocation, false, modelViewMatrix.toArray());
+      this.gl.uniformMatrix4fv(modelViewMatrixLocation, false, object.transform.worldMatrix.toArray());
     }
 
-    // Set normal matrix
-    const normalMatrix = object.transform.worldMatrix.inverse().transpose();
-    const normalMatrixLocation = this.gl.getUniformLocation(this.shaderProgram, 'uNormalMatrix');
     if (normalMatrixLocation) {
+      const normalMatrix = object.transform.worldMatrix.clone().invert().transpose();
       this.gl.uniformMatrix4fv(normalMatrixLocation, false, normalMatrix.toArray());
     }
 
-    // Render mesh (simplified - would need actual mesh data)
-    // this.renderMesh(meshRenderer.getMesh());
+    // Render mesh
+    this.renderMesh(meshRenderer.mesh);
   }
 
   private render2D(): void {
     if (!this.context) return;
 
-    // Render vector shapes
-    for (const shape of this.vectorShapes) {
+    // Render 2D vector shapes
+    this.vectorShapes.forEach(shape => {
       this.renderVectorShape(shape);
-    }
+    });
 
-    // Render 2D game objects
-    for (const object of this.renderQueue) {
-      this.renderObject2D(object);
+    // Render 2D objects
+    if (this.currentScene) {
+      this.currentScene.objects.forEach(object => {
+        this.renderObject2D();
+      });
     }
   }
 
@@ -602,7 +588,7 @@ export class VectorRenderer {
     this.context.restore();
   }
 
-  private renderObject2D(object: GameObject): void {
+  private renderObject2D(): void {
     if (!this.context) return;
 
     // Get 2D components and render them
@@ -783,5 +769,47 @@ export class VectorRenderer {
         this.config.enablePostProcessing = true;
         break;
     }
+  }
+
+  private createRotationMatrix(direction: Vector3D, up: Vector3D): Matrix4x4 {
+    const rotationMatrix = new Matrix4x4();
+    const data = rotationMatrix.getData();
+    
+    const right = Vector3D.cross(direction, up).normalize();
+    const newUp = Vector3D.cross(right, direction).normalize();
+    
+    data[0] = right.x;
+    data[1] = right.y;
+    data[2] = right.z;
+    data[4] = newUp.x;
+    data[5] = newUp.y;
+    data[6] = newUp.z;
+    data[8] = direction.x;
+    data[9] = direction.y;
+    data[10] = direction.z;
+    
+    return rotationMatrix;
+  }
+
+  private updateCameraMatrices(): void {
+    // Update camera matrices for rendering
+    if (this.currentScene?.camera) {
+      this.currentScene.camera.updateViewMatrix();
+    }
+  }
+
+  private renderObjects(): void {
+    // Render all objects in the scene
+    if (this.currentScene) {
+      this.currentScene.objects.forEach(object => {
+        this.renderObject3D(object);
+      });
+    }
+  }
+
+  private renderMesh(mesh: any): void {
+    // Render mesh data (placeholder implementation)
+    if (!this.gl || !mesh) return;
+    // Actual mesh rendering would go here
   }
 } 
