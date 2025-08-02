@@ -18,23 +18,27 @@
 ## 🛠️ Technology Stack
 
 ### Frontend
+
 - **React 18** with TypeScript for UI components
 - **Three.js** for 3D graphics and rendering
 - **Babylon.js** for advanced 3D scenes
 - **Framer Motion** for smooth animations
 
 ### Backend
+
 - **Node.js** with Express for API services
 - **PostgreSQL** for game data persistence
 - **Redis** for caching and real-time features
 - **Socket.io** for multiplayer functionality
 
 ### Game Engine
+
 - **Custom WebGL Engine** for optimal performance
 - **Physics Engine**: Custom implementation with realistic mechanics
 - **Audio Engine**: Web Audio API with spatial sound
 
 ### Data Sources
+
 - **OpenStreetMap** for street layouts and building data
 - **Google Maps API** for satellite imagery and terrain
 - **NYC Open Data** for authentic city information
@@ -60,7 +64,8 @@ GTL IV/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - PostgreSQL 14+
 - Redis 6+
 - Modern web browser with WebGL support
@@ -68,23 +73,27 @@ GTL IV/
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone [repository-url]
    cd "GTL IV"
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env
    # Configure your API keys and database connections
    ```
 
 4. **Initialize the database**
+
    ```bash
    npm run db:setup
    ```
@@ -97,18 +106,23 @@ GTL IV/
 ## 🎯 Game Features
 
 ### Core Gameplay
+
 - **Open World Exploration**: Seamless navigation through NYC boroughs
 - **Vehicle Mechanics**: Realistic driving physics and vehicle customization
 - **Character Progression**: Skill development and character growth
 - **Mission System**: Dynamic quest generation and storylines
+- **Leyline Drift Missions**: Special questline unlocking sigil-charged vehicles
+- **Interdimensional Portals**: Seamless travel between NYC and connected realms
 - **Economy System**: In-game currency and property management
 
 ### Technical Features
+
 - **Real-time Rendering**: 60 FPS performance on modern hardware
 - **LOD System**: Dynamic level-of-detail for optimal performance
 - **Procedural Generation**: Dynamic content generation for replayability
 - **Multiplayer Support**: Cooperative and competitive gameplay modes
 - **Mod Support**: Extensible architecture for community content
+- **Divina-L3 Networking**: GameDin-integrated client for cross-realm handshakes
 
 ## 📊 Performance Targets
 
@@ -120,12 +134,14 @@ GTL IV/
 ## 🔧 Development Guidelines
 
 ### Code Standards
+
 - **TypeScript**: Strict type checking enabled
 - **ESLint**: Comprehensive linting rules
 - **Prettier**: Consistent code formatting
 - **Jest**: Unit and integration testing
 
 ### Asset Guidelines
+
 - **Textures**: Optimized for web delivery (WebP format)
 - **Models**: Low-poly with normal maps for detail
 - **Audio**: Compressed formats with fallbacks
@@ -134,18 +150,21 @@ GTL IV/
 ## 📈 Roadmap
 
 ### Phase 1: Core Engine (Current)
+
 - [x] Project structure and documentation
 - [ ] Basic 3D rendering engine
 - [ ] NYC map data integration
 - [ ] Vehicle physics system
 
 ### Phase 2: Gameplay Systems
+
 - [ ] Character system and controls
 - [ ] Mission and quest framework
 - [ ] Economy and progression
 - [ ] Audio and visual effects
 
 ### Phase 3: Polish & Optimization
+
 - [ ] Performance optimization
 - [ ] UI/UX refinement
 - [ ] Multiplayer features
@@ -168,4 +187,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**🎮 Ready to explore the city that never sleeps? Start your journey in GTL IV!** 
+**🎮 Ready to explore the city that never sleeps? Start your journey in GTL IV!**

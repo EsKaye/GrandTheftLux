@@ -1,6 +1,6 @@
 /**
  * 🚗 Vehicle Type Definitions
- * 
+ *
  * Comprehensive type definitions for:
  * - Vehicle types and classes
  * - Engine and transmission specifications
@@ -10,35 +10,35 @@
  */
 
 export enum VehicleType {
-  SPORTS_CAR = 'sports_car',
-  SEDAN = 'sedan',
-  SUV = 'suv',
-  MOTORCYCLE = 'motorcycle',
-  TRUCK = 'truck',
-  BUS = 'bus',
-  EMERGENCY = 'emergency',
-  MILITARY = 'military',
-  AIRCRAFT = 'aircraft',
-  BOAT = 'boat'
+  SPORTS_CAR = "sports_car",
+  SEDAN = "sedan",
+  SUV = "suv",
+  MOTORCYCLE = "motorcycle",
+  TRUCK = "truck",
+  BUS = "bus",
+  EMERGENCY = "emergency",
+  MILITARY = "military",
+  AIRCRAFT = "aircraft",
+  BOAT = "boat",
 }
 
 export enum VehicleClass {
-  SPORTS = 'sports',
-  STANDARD = 'standard',
-  UTILITY = 'utility',
-  MOTORCYCLE = 'motorcycle',
-  COMMERCIAL = 'commercial',
-  EMERGENCY = 'emergency',
-  MILITARY = 'military',
-  AVIATION = 'aviation',
-  MARINE = 'marine'
+  SPORTS = "sports",
+  STANDARD = "standard",
+  UTILITY = "utility",
+  MOTORCYCLE = "motorcycle",
+  COMMERCIAL = "commercial",
+  EMERGENCY = "emergency",
+  MILITARY = "military",
+  AVIATION = "aviation",
+  MARINE = "marine",
 }
 
 export interface EngineData {
   power: number; // Horsepower
   torque: number; // lb-ft
   redline: number; // RPM
-  fuelType: 'gasoline' | 'diesel' | 'electric' | 'hybrid';
+  fuelType: "gasoline" | "diesel" | "electric" | "hybrid";
   displacement?: number; // Liters
   cylinders?: number;
   turbocharged?: boolean;
@@ -47,16 +47,16 @@ export interface EngineData {
 }
 
 export interface TransmissionData {
-  type: 'manual' | 'automatic' | 'cvt' | 'semi_auto';
+  type: "manual" | "automatic" | "cvt" | "semi_auto";
   gears: number;
   gearRatios: number[];
   finalDrive?: number;
-  clutchType?: 'single' | 'dual' | 'triple';
+  clutchType?: "single" | "dual" | "triple";
   shiftSpeed?: number; // seconds
 }
 
 export interface SuspensionData {
-  type: 'independent' | 'solid_axle' | 'telescopic' | 'air';
+  type: "independent" | "solid_axle" | "telescopic" | "air";
   stiffness: number; // 0-1
   damping: number; // 0-1
   rideHeight: number; // meters
@@ -66,11 +66,17 @@ export interface SuspensionData {
 }
 
 export interface TireData {
-  type: 'all_season' | 'summer' | 'winter' | 'performance' | 'off_road' | 'sport';
+  type:
+    | "all_season"
+    | "summer"
+    | "winter"
+    | "performance"
+    | "off_road"
+    | "sport";
   grip: number; // 0-1
   wear: number; // 0-1, higher = faster wear
   size: { width: number; aspect: number; diameter: number };
-  compound?: 'soft' | 'medium' | 'hard';
+  compound?: "soft" | "medium" | "hard";
   pressure?: number; // PSI
 }
 
@@ -94,10 +100,15 @@ export interface VehicleData {
   suspension: SuspensionData;
   tires: TireData;
   price: number;
-  rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
+  rarity: "common" | "uncommon" | "rare" | "legendary";
   description?: string;
   manufacturer?: string;
   year?: number;
+  /**
+   * Optional list of divine sigils embedded in the vehicle.
+   * These enable special abilities unlocked via missions.
+   */
+  sigils?: string[];
 }
 
 export interface VehicleState {
@@ -133,7 +144,7 @@ export interface VehicleControls {
   handbrake: boolean;
   horn: boolean;
   lights: boolean;
-  indicators: 'left' | 'right' | 'off';
+  indicators: "left" | "right" | "off";
 }
 
 export interface VehiclePhysics {
@@ -206,10 +217,10 @@ export interface VehicleEffects {
 
 export interface VehicleCollision {
   enabled: boolean;
-  shape: 'box' | 'cylinder' | 'mesh';
+  shape: "box" | "cylinder" | "mesh";
   size: { x: number; y: number; z: number };
   offset: { x: number; y: number; z: number };
-  material: 'metal' | 'plastic' | 'glass' | 'rubber';
+  material: "metal" | "plastic" | "glass" | "rubber";
   friction: number;
   restitution: number;
 }
@@ -284,4 +295,4 @@ export interface VehicleSaveData {
     fuelUsed: number;
     maintenanceCost: number;
   };
-} 
+}
