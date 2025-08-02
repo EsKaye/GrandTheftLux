@@ -112,7 +112,7 @@ GTL IV/
 - **Character Progression**: Skill development and character growth
 - **Mission System**: Dynamic quest generation and storylines
 - **Leyline Drift Missions**: Special questline unlocking sigil-charged vehicles
-- **Interdimensional Portals**: Seamless travel between NYC and connected realms
+- **Interdimensional Portals**: Seamless travel with customizable VFX/SFX and analytics
 - **Economy System**: In-game currency and property management
 
 ### Technical Features
@@ -122,7 +122,7 @@ GTL IV/
 - **Procedural Generation**: Dynamic content generation for replayability
 - **Multiplayer Support**: Cooperative and competitive gameplay modes
 - **Mod Support**: Extensible architecture for community content
-- **Divina-L3 Networking**: GameDin-integrated client for cross-realm handshakes
+- **Divina-L3 Networking**: WebSocket client with retry/backoff for cross-realm handshakes
 
 ## 📊 Performance Targets
 

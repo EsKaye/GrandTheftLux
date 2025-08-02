@@ -39,7 +39,8 @@
 #### 🌌 **Interworld Connectivity**
 
 - ✅ **PortalSystem**: Seamless transitions between realms
-- ✅ **Divina-L3 Client**: GameDin network handshake for portals
+- ✅ **Divina-L3 Client**: WebSocket network handshake with retry/backoff
+- ✅ **Portal Analytics & FX**: Usage metrics with customizable visual/audio cues
 
 #### 📝 **Type Definitions**
 
