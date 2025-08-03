@@ -1,0 +1,10 @@
+site_name: GrandTheftLux
+site_url: https://GrandTheftLux.SolarKhan.github.io
+docs_dir: docs
+nav:
+  - Home: index.md
+  - Divine Law: COVENANT.md
+theme:
+  name: mkdocs
+extra:
+  banner: 'Solar Khan sigil and Codex watermark placeholder'

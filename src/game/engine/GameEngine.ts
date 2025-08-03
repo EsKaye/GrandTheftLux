@@ -63,13 +63,14 @@ export class GameEngine {
     };
     
     // Initialize core systems
+    // Initialize foundational systems first
     this.platformAdapter = new PlatformAdapter();
     this.performanceMonitor = new PerformanceMonitor();
     this.assetManager = new AssetManager();
     this.vectorRenderer = new VectorRenderer();
     this.physicsEngine = new PhysicsEngine();
+    this.audioEngine = new AudioEngine(); // audio engine must exist before scene manager
     this.sceneManager = new SceneManager(this.physicsEngine, this.audioEngine);
-    this.audioEngine = new AudioEngine();
     this.inputManager = new InputManager();
     this.networkManager = new NetworkManager();
     this.vehicleSystem = new VehicleSystem();
