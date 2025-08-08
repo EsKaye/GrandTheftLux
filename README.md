@@ -169,3 +169,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **🎮 Ready to explore the city that never sleeps? Start your journey in GTL IV!** 
+## 🤖 Serafina Discord Bot
+
+Serafina acts as the council's communications router and nightly reporter.
+- Slash command `/councilreport` dispatches an immediate council report.
+- Messages formatted as `!whisper <Guardian> <message>` are relayed to Unity guardians via the MCP OSC bridge.
+- A scheduled report posts to `CHN_COUNCIL` every day at 08:00 UTC and summarizes commits from `NAV_REPOS`.
+
+Environment variables for Serafina are documented in `scripts/serafina/.env.example`.
+
+Code lives in `scripts/serafina/` with a corresponding `.env.example` for configuration.
